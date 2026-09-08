@@ -3,6 +3,7 @@ export class AppError extends Error {
       public readonly statusCode: number,
       public readonly code: string,
       message: string,
+      public readonly details?: unknown,
     ) {
       super(message);
       this.name = 'AppError';
@@ -16,8 +17,8 @@ export class AppError extends Error {
       return new AppError(403, code, message);
     }
   
-    static badRequest(code: string, message: string): AppError {
-      return new AppError(400, code, message);
+    static badRequest(code: string, message: string, details?: unknown): AppError {
+      return new AppError(400, code, message, details);
     }
   
     static notFound(code: string, message: string): AppError {
