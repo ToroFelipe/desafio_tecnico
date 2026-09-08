@@ -22,7 +22,7 @@ describe('POST /login', () => {
   it('entrega token con sub, role y rut para rol user', async () => {
     const response = await request(app)
       .post('/login')
-      .send({ email: 'ana.soto@fintech.cl', password: 'user123' });
+      .send({ email: 'usr_002@test.cl', password: 'user123' });
 
     expect(response.status).toBe(200);
     const payload = jwt.decode(response.body.token) as Record<string, unknown>;
@@ -33,7 +33,7 @@ describe('POST /login', () => {
   it('no incluye rut cuando el rol es admin', async () => {
     const response = await request(app)
       .post('/login')
-      .send({ email: 'admin@fintech.cl', password: 'admin123' });
+      .send({ email: 'usr_001@test.cl', password: 'admin123' });
 
     expect(response.status).toBe(200);
     const payload = jwt.decode(response.body.token) as Record<string, unknown>;
@@ -44,7 +44,7 @@ describe('POST /login', () => {
   it('responde 401 con contrasena incorrecta', async () => {
     const response = await request(app)
       .post('/login')
-      .send({ email: 'ana.soto@fintech.cl', password: 'incorrecta' });
+      .send({ email: 'usr_002@test.cl', password: 'incorrecta' });
 
     expect(response.status).toBe(401);
     expect(response.body.error.code).toBe('INVALID_CREDENTIALS');
@@ -90,7 +90,7 @@ describe('GET /score/:rut - autenticacion', () => {
 
 describe('GET /score/:rut - autorizacion', () => {
   it('permite al user consultar su propio RUT', async () => {
-    const token = await loginWith('ana.soto@fintech.cl', 'user123');
+    const token = await loginWith('usr_002@test.cl', 'user123');
     const response = await request(app)
       .get(`/score/${RUT_ANA}`)
       .set('Authorization', `Bearer ${token}`);
@@ -99,7 +99,7 @@ describe('GET /score/:rut - autorizacion', () => {
   });
 
   it('responde 403 cuando user consulta RUT ajeno', async () => {
-    const token = await loginWith('ana.soto@fintech.cl', 'user123');
+    const token = await loginWith('usr_002@test.cl', 'user123');
     const response = await request(app)
       .get(`/score/${RUT_CARLOS}`)
       .set('Authorization', `Bearer ${token}`);
@@ -108,7 +108,7 @@ describe('GET /score/:rut - autorizacion', () => {
   });
 
   it('no deja evadir el control cambiando el formato del RUT', async () => {
-    const token = await loginWith('ana.soto@fintech.cl', 'user123');
+    const token = await loginWith('usr_002@test.cl', 'user123');
     for (const variante of ['187560667', '18756066-7', '18.756.066-7']) {
       const response = await request(app)
         .get(`/score/${variante}`)
@@ -118,7 +118,7 @@ describe('GET /score/:rut - autorizacion', () => {
   });
 
   it('permite al admin consultar cualquier RUT', async () => {
-    const token = await loginWith('admin@fintech.cl', 'admin123');
+    const token = await loginWith('usr_001@test.cl', 'admin123');
     for (const rut of [RUT_ANA, RUT_CARLOS]) {
       const response = await request(app)
         .get(`/score/${rut}`)
@@ -128,7 +128,7 @@ describe('GET /score/:rut - autorizacion', () => {
   });
 
   it('devuelve el mismo score en consultas repetidas', async () => {
-    const token = await loginWith('admin@fintech.cl', 'admin123');
+    const token = await loginWith('usr_001@test.cl', 'admin123');
     const primera = await request(app).get(`/score/${RUT_ANA}`).set('Authorization', `Bearer ${token}`);
     const segunda = await request(app).get(`/score/${RUT_ANA}`).set('Authorization', `Bearer ${token}`);
     expect(primera.body.score).toBe(segunda.body.score);
